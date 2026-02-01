@@ -1,4 +1,4 @@
-name: Build APK
+name: Build Debug APK
 
 on:
   push:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repo
+      # 1️⃣ Checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: 18
 
-      # 3️⃣ Install dependencies (uses REAL package.json from repo)
+      # 3️⃣ Install npm dependencies (uses your real package.json)
       - name: Install npm dependencies
         run: npm install
 
@@ -28,16 +28,16 @@ jobs:
       - name: Install Capacitor CLI
         run: npm install -g @capacitor/cli
 
-      # 5️⃣ Add Android platform
+      # 5️⃣ Add Android platform (safe if already exists)
       - name: Add Android platform
         run: |
           npx cap add android || echo "Android already exists"
 
       # 6️⃣ Sync Capacitor
       - name: Sync Capacitor
-        run: npx cap sync android
+        run: npx cap sync android --no-build
 
-      # 7️⃣ Fix namespace (AGP 8 requirement)
+      # 7️⃣ Fix Android namespace (required for AGP 8+)
       - name: Fix Android namespace
         run: |
           APP_GRADLE="android/app/build.gradle"
@@ -45,23 +45,23 @@ jobs:
             sed -i '/android {/a\    namespace "com.shahil.levelup"' "$APP_GRADLE"
           fi
 
-      # 8️⃣ Setup JDK
+      # 8️⃣ Setup Java (required for Android build)
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      # 9️⃣ Build APK
-      - name: Build Release APK
+      # 9️⃣ Build DEBUG APK (auto-signed)
+      - name: Build Debug APK
         run: |
           cd android
           chmod +x ./gradlew
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleDebug --no-daemon
 
-      # 🔟 Upload APK
-      - name: Upload APK artifact
+      # 🔟 Upload DEBUG APK
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: LevelUp-APK
-          path: android/app/build/outputs/apk/release/*.apk
+          name: LevelUp-Debug-APK
+          path: android/app/build/outputs/apk/debug/*.apk
