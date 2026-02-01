@@ -1,8 +1,7 @@
 {
   "appId": "com.shahil.levelup",
   "appName": "Level Up",
-  "webDir": ".",
-  "bundledWebRuntime": false,
+  "webDir": "public",
   "server": {
     "androidScheme": "https"
   },
