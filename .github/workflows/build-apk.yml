@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout code
+      # 1️⃣ Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: 18
 
-      # 3️⃣ Install npm dependencies (uses your real package.json)
+      # 3️⃣ Install dependencies (uses your real package.json)
       - name: Install npm dependencies
         run: npm install
 
@@ -28,16 +28,12 @@ jobs:
       - name: Install Capacitor CLI
         run: npm install -g @capacitor/cli
 
-      # 5️⃣ Add Android platform (safe if already exists)
+      # 5️⃣ Add Android platform (THIS ALREADY DOES SYNC)
       - name: Add Android platform
         run: |
           npx cap add android || echo "Android already exists"
 
-      # 6️⃣ Sync Capacitor
-      - name: Sync Capacitor
-        run: npx cap sync android --no-build
-
-      # 7️⃣ Fix Android namespace (required for AGP 8+)
+      # 6️⃣ Fix Android namespace (AGP 8+ requirement)
       - name: Fix Android namespace
         run: |
           APP_GRADLE="android/app/build.gradle"
@@ -45,21 +41,21 @@ jobs:
             sed -i '/android {/a\    namespace "com.shahil.levelup"' "$APP_GRADLE"
           fi
 
-      # 8️⃣ Setup Java (required for Android build)
+      # 7️⃣ Setup Java
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      # 9️⃣ Build DEBUG APK (auto-signed)
+      # 8️⃣ Build DEBUG APK (auto-signed, installable, shareable)
       - name: Build Debug APK
         run: |
           cd android
           chmod +x ./gradlew
           ./gradlew assembleDebug --no-daemon
 
-      # 🔟 Upload DEBUG APK
+      # 9️⃣ Upload DEBUG APK
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
